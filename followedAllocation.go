@@ -43,6 +43,10 @@ func (f *FollowedAllocation) Start(save *SavedAlloc) {
 			ft := NewFollowedTask(f.Alloc, *tg.Name, task, f.Nomad, f.Quit, f.OutputChan, f.log)
 			skip := (strings.TrimSpace(f.logTag) != "")
 			for _, s := range ft.logTemplate.ServiceTags {
+				if s == "logging.ignore=true" {
+					skip = true
+					break
+				}
 				if s == f.logTag {
 					skip = false
 					break
