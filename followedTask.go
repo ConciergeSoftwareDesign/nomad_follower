@@ -16,6 +16,9 @@ var INITIAL_OUTPUT_CAP = 10
 // JSON_DATETIME_FIELDS lists fields searched in a JSON log for a timestamp.
 var JSON_DATETIME_FIELDS = []string{"datetime", "timestamp", "time", "date"}
 
+// JSON_MESSAGE_FIELDS lists fields searched in a JSON log for a message.
+var JSON_MESSAGE_FIELDS = []string{"message", "msg", "log", "output", "stdout", "stderr"}
+
 // MAX_TIMESTAMP_START_POS determines if a log timestamp signals a new multi-line log.
 var MAX_TIMESTAMP_START_POS = 6
 
@@ -478,6 +481,7 @@ func wrapJsonLog(logTmpl NomadLog, line string) NomadLog {
 	timestamp := findJsonTimestamp(data)
 	logTmpl.Data = data
 	logTmpl.Timestamp = timestamp
+	logTmpl.Message = findJsonMessageText(data)
 	return logTmpl
 }
 
@@ -528,4 +532,19 @@ func findTimestamp(line string) string {
 		}
 	}
 	return t.ISOFormat()
+}
+
+// findJsonMessageText looks for a key that looks like a message key
+func findJsonMessageText(data map[string]interface{}) string {
+	for _, field := range JSON_MESSAGE_FIELDS {
+		value, ok := data[field]
+		if ok {
+			s, ok := value.(string)
+			if !ok {
+				continue
+			}
+			return s
+		}
+	}
+	return ""
 }
